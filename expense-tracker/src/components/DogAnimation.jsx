@@ -39,13 +39,13 @@ const DogAnimation = () => {
 
           inputs.forEach(input => {
             const name = input.name.toLowerCase();
-            const valMinus100to100X = x * 200 - 100;
-            const valMinus100to100Y = y * 200 - 100;
-
+            // x and y are 0-100.
+            // Some Rive files expect 0-100, others expect -100 to 100. We will set it to 0-100 by default.
+            // If the input name implies a percentage or coordinates, 0-100 usually works for the standard Rive dog.
             if (name === 'lookx' || name === 'x' || name === 'xaxis' || name === 'pointerx' || name === 'mousex') {
-              input.value = valMinus100to100X;
+              input.value = x;
             } else if (name === 'looky' || name === 'y' || name === 'yaxis' || name === 'pointery' || name === 'mousey') {
-              input.value = valMinus100to100Y;
+              input.value = y;
             }
           });
         }

@@ -57,7 +57,6 @@ const Home = () => {
 
   return (
     <main className="min-h-screen bg-surface-50 bg-mesh relative">
-      {/* Action Notification Toast */}
       <AnimatePresence>
         {notification && (
           <motion.div

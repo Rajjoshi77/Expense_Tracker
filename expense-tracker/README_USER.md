@@ -32,6 +32,7 @@ Every time you spend money — on food, travel, bills, or anything else — you 
 | 📊 **Summary Dashboard** | See your total spending at a glance |
 | 🎯 **Category Breakdown** | Know exactly where your money goes |
 | 💱 **Currency Converter** | Convert your total into 5 different currencies — live! |
+| 🐶 **Interactive Mascot** | A cute dog mascot in the corner that watches your cursor! |
 | 📱 **Works on Mobile** | Use it on any device — phone, tablet, or laptop |
 
 ---
@@ -197,6 +198,7 @@ Expense AI uses a **modern dark theme** inspired by professional finance tools:
 
 - 🌑 **Dark background** — Easy on the eyes, great for long sessions
 - 🪟 **Glass cards** — Frosted glass effect for a premium feel
+- 🐶 **Interactive Mascot** — Fun Rive animation that tracks your mouse cursor
 - 💚 **Green accents** — Classic money/finance color
 - 🌊 **Smooth animations** — Everything moves and transitions smoothly
 - ✨ **Hover effects** — Cards respond to your cursor
@@ -244,7 +246,7 @@ Expense AI was built as a showcase project demonstrating modern web development 
 
 - Built with **React** — the world's most popular UI library
 - Styled with **Tailwind CSS** — for pixel-perfect, responsive design
-- Animated with **Framer Motion** — for smooth, professional animations
+- Animated with **Framer Motion & Rive** — for smooth, professional UI and interactive mascots
 - Live data from **Frankfurter API** — real-world API integration
 
 ---

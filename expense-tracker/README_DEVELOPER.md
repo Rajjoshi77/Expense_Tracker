@@ -36,6 +36,7 @@
 - ✅ Add / Delete expenses with full form validation
 - ✅ Category-wise spending breakdown with animated progress bars
 - ✅ Live currency conversion (USD → INR, EUR, GBP, JPY) via Frankfurter API
+- ✅ Interactive Mascot (Rive animation) with dynamic, frame-perfect eye-tracking
 - ✅ Summary panel with total, converted amount, and top category
 - ✅ Sort & filter expenses by category and date/amount
 - ✅ Animated empty state, loading spinners, error handling
@@ -51,6 +52,7 @@
 | **Vite** | 5.x | Build tool & dev server |
 | **Tailwind CSS** | 3.x | Utility-first styling |
 | **Framer Motion** | 11.x | Animations & transitions |
+| **Rive** | 2.x | Interactive vector animations (`@rive-app/react-canvas`) |
 | **Axios** | 1.x | HTTP requests to currency API |
 | **React Icons** | 5.x | Icon library (MD icons) |
 | **PostCSS** | – | Tailwind CSS processing |
@@ -75,6 +77,7 @@ expense-tracker/
 │   │   ├── ExpenseCard.jsx    # Individual expense card
 │   │   ├── CategoryBreakdown.jsx  # Category progress bars
 │   │   ├── CurrencyConverter.jsx  # Live API currency converter
+│   │   ├── DogAnimation.jsx   # Rive interactive mascot with eye-tracking
 │   │   ├── Loader.jsx         # Animated loading spinner
 │   │   └── EmptyState.jsx     # Empty state with illustration
 │   │
@@ -169,7 +172,7 @@ colors: {
 ### Font Setup
 Fonts are loaded via Google Fonts CDN in `index.css`:
 ```css
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700;800&display=swap');
 ```
 No additional npm packages needed.
 
@@ -411,12 +414,12 @@ The Frankfurter API (`api.frankfurter.app`) supports CORS by default.
 The fonts are loaded via `@import` in `index.css`. If offline:
 - Install fonts locally or use `fontsource` npm packages:
 ```bash
-npm install @fontsource/inter @fontsource/poppins
+npm install @fontsource/inter @fontsource/space-grotesk
 ```
 Then import in `main.jsx`:
 ```javascript
 import '@fontsource/inter';
-import '@fontsource/poppins';
+import '@fontsource/space-grotesk';
 ```
 
 ### ❌ `Build fails — PostCSS error`

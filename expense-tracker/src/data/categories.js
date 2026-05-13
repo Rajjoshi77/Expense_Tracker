@@ -44,5 +44,11 @@ export const CURRENCIES = [
   { code: 'JPY', symbol: '¥',  name: 'Japanese Yen',  flag: '🇯🇵' },
 ];
 
+export const EXPENSE_TYPES = [
+  { value: 'Recurring', label: 'Recurring Expense' },
+  { value: 'Regular', label: 'Regular Expense' },
+  { value: 'Personal', label: 'Personal Expense' }
+];
+
 export const getCategoryConfig = (value) =>
   CATEGORIES.find(c => c.value === value) ?? CATEGORIES[4];

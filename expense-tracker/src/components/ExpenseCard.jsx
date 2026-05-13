@@ -45,7 +45,7 @@ const ExpenseCard = ({ expense, onDelete, index }) => {
         <p className="text-caption mt-0.5">{formatDate(date)}</p>
       </div>
 
-      <div className="hidden sm:block flex-shrink-0">
+      <div className="hidden sm:flex items-center gap-2 flex-shrink-0">
         <span
           className="badge text-[11px] font-medium"
           style={{
@@ -56,6 +56,11 @@ const ExpenseCard = ({ expense, onDelete, index }) => {
         >
           {cat.label}
         </span>
+        {expense.type && (
+          <span className="badge text-[11px] font-medium bg-slate-100 text-slate-600 border-slate-200">
+            {expense.type}
+          </span>
+        )}
       </div>
 
       <div className="text-right flex-shrink-0">

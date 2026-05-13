@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { NavLink } from 'react-router-dom';
 import passportImg from '../assets/passport size.jpg';
 import logoImg from '../assets/logo.png';
 
@@ -21,12 +22,22 @@ const Navbar = () => {
           </div>
 
           <div className="hidden md:flex items-center gap-1">
-            <a
-              href="#"
-              className="px-3.5 py-1.5 rounded-md text-sm font-medium transition-colors duration-150 text-primary bg-primary-50"
+            <NavLink
+              to="/"
+              className={({ isActive }) => 
+                `px-3.5 py-1.5 rounded-md text-sm font-medium transition-colors duration-150 ${isActive ? 'text-primary bg-primary-50' : 'text-ink-muted hover:text-ink hover:bg-surface'}`
+              }
             >
               Dashboard
-            </a>
+            </NavLink>
+            <NavLink
+              to="/analysis"
+              className={({ isActive }) => 
+                `px-3.5 py-1.5 rounded-md text-sm font-medium transition-colors duration-150 ${isActive ? 'text-primary bg-primary-50' : 'text-ink-muted hover:text-ink hover:bg-surface'}`
+              }
+            >
+              Analysis
+            </NavLink>
           </div>
 
           <div className="flex items-center gap-2">
@@ -60,18 +71,25 @@ const Navbar = () => {
 
         {mobileOpen && (
           <motion.div
-            className="md:hidden py-2 border-t border-border"
+            className="md:hidden py-2 border-t border-border flex flex-col gap-1"
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.15 }}
           >
-            <a
-              href="#"
-              className="block px-4 py-2 text-sm text-primary bg-primary-50 rounded-md"
+            <NavLink
+              to="/"
+              className={({ isActive }) => `block px-4 py-2 text-sm rounded-md ${isActive ? 'text-primary bg-primary-50' : 'text-ink-muted'}`}
               onClick={() => setMobileOpen(false)}
             >
               Dashboard
-            </a>
+            </NavLink>
+            <NavLink
+              to="/analysis"
+              className={({ isActive }) => `block px-4 py-2 text-sm rounded-md ${isActive ? 'text-primary bg-primary-50' : 'text-ink-muted'}`}
+              onClick={() => setMobileOpen(false)}
+            >
+              Analysis
+            </NavLink>
           </motion.div>
         )}
       </div>

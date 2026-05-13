@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CATEGORIES } from '../data/categories';
+import { CATEGORIES, EXPENSE_TYPES } from '../data/categories';
 
 const FieldError = ({ msg }) => (
   <AnimatePresence>
@@ -15,7 +15,7 @@ const FieldError = ({ msg }) => (
         <svg className="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
           <path fillRule="evenodd"
             d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-            clipRule="evenodd"/>
+            clipRule="evenodd" />
         </svg>
         {msg}
       </motion.p>
@@ -23,12 +23,12 @@ const FieldError = ({ msg }) => (
   </AnimatePresence>
 );
 
-const EMPTY = { name: '', amount: '', category: '' };
+const getEmptyForm = () => ({ name: '', amount: '', category: '', type: '', date: new Date().toISOString().split('T')[0] });
 
 const ExpenseForm = ({ onAddExpense }) => {
-  const [form, setForm]       = useState(EMPTY);
-  const [errors, setErrors]   = useState({});
-  const [status, setStatus]   = useState('idle');
+  const [form, setForm] = useState(getEmptyForm());
+  const [errors, setErrors] = useState({});
+  const [status, setStatus] = useState('idle');
 
   const handleChange = ({ target: { name, value } }) => {
     setForm(prev => ({ ...prev, [name]: value }));
@@ -37,11 +37,13 @@ const ExpenseForm = ({ onAddExpense }) => {
 
   const validate = () => {
     const e = {};
-    if (!form.name.trim())           e.name   = 'Expense name is required';
-    else if (form.name.trim().length < 2)  e.name = 'At least 2 characters';
-    if (!form.amount)                e.amount  = 'Amount is required';
-    else if (+form.amount <= 0)      e.amount  = 'Enter a valid positive amount';
-    if (!form.category)              e.category = 'Select a category';
+    if (!form.name.trim()) e.name = 'Expense name is required';
+    else if (form.name.trim().length < 2) e.name = 'At least 2 characters';
+    if (!form.amount) e.amount = 'Amount is required';
+    else if (+form.amount <= 0) e.amount = 'Enter a valid positive amount';
+    if (!form.category) e.category = 'Select a category';
+    if (!form.type) e.type = 'Select an expense type';
+    if (!form.date) e.date = 'Date is required';
     return e;
   };
 
@@ -54,14 +56,15 @@ const ExpenseForm = ({ onAddExpense }) => {
     await new Promise(r => setTimeout(r, 350));
 
     onAddExpense({
-      id:       Date.now(),
-      name:     form.name.trim(),
-      amount:   parseFloat((+form.amount).toFixed(2)),
+      id: Date.now(),
+      name: form.name.trim(),
+      amount: parseFloat((+form.amount).toFixed(2)),
       category: form.category,
-      date:     new Date().toISOString(),
+      type: form.type,
+      date: new Date(form.date + 'T12:00:00').toISOString(),
     });
 
-    setForm(EMPTY);
+    setForm(getEmptyForm());
     setErrors({});
     setStatus('success');
     setTimeout(() => setStatus('idle'), 2000);
@@ -77,7 +80,7 @@ const ExpenseForm = ({ onAddExpense }) => {
       <div className="flex items-center gap-3 mb-5 pb-4 border-b border-border">
         <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center">
           <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
           </svg>
         </div>
         <div>
@@ -139,10 +142,48 @@ const ExpenseForm = ({ onAddExpense }) => {
               className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted"
               fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
             >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
             </svg>
           </div>
           <FieldError msg={errors.category} />
+        </div>
+
+        <div>
+          <label htmlFor="expense-type" className="label">Expense Type</label>
+          <div className="relative">
+            <select
+              id="expense-type"
+              name="type"
+              value={form.type}
+              onChange={handleChange}
+              className={`input appearance-none cursor-pointer pr-9 ${errors.type ? 'input-error' : ''}`}
+            >
+              <option value="" disabled>Select a type…</option>
+              {EXPENSE_TYPES.map(type => (
+                <option key={type.value} value={type.value}>{type.label}</option>
+              ))}
+            </select>
+            <svg
+              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted"
+              fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+          <FieldError msg={errors.type} />
+        </div>
+
+        <div>
+          <label htmlFor="expense-date" className="label">Date</label>
+          <input
+            id="expense-date"
+            name="date"
+            type="date"
+            value={form.date}
+            onChange={handleChange}
+            className={`input ${errors.date ? 'input-error' : ''}`}
+          />
+          <FieldError msg={errors.date} />
         </div>
 
         <motion.button
@@ -157,7 +198,7 @@ const ExpenseForm = ({ onAddExpense }) => {
               <motion.span key="ok" className="flex items-center gap-2"
                 initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
                 Expense added
               </motion.span>
@@ -171,7 +212,7 @@ const ExpenseForm = ({ onAddExpense }) => {
               <motion.span key="idle" className="flex items-center gap-2"
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                 </svg>
                 Add Expense
               </motion.span>

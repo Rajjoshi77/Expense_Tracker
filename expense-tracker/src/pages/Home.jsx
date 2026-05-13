@@ -10,16 +10,7 @@ import CurrencyConverter from '../components/CurrencyConverter';
 import groupImg from '../assets/group.jpg';
 import logoImg from '../assets/logo.png';
 
-const SEED = [
-  { id: 1, name: 'Team Lunch', amount: 85.50, category: 'Food', date: new Date(Date.now() - 86400000 * 1).toISOString(), user: 'Sarah' },
-  { id: 2, name: 'Flight to NYC', amount: 320.00, category: 'Travel', date: new Date(Date.now() - 86400000 * 2).toISOString(), user: 'Me' },
-  { id: 3, name: 'Google Ads Campaign', amount: 150.00, category: 'Marketing', date: new Date(Date.now() - 86400000 * 3).toISOString(), user: 'Alex' },
-  { id: 4, name: 'Internet & Cloud', amount: 60.00, category: 'Utilities', date: new Date(Date.now() - 86400000 * 4).toISOString(), user: 'Me' },
-  { id: 5, name: 'Coffee & Snacks', amount: 24.75, category: 'Food', date: new Date(Date.now() - 86400000 * 5).toISOString(), user: 'Sarah' },
-];
-
-const Home = () => {
-  const [expenses, setExpenses] = useState(SEED);
+const Home = ({ expenses, onAddExpense, onDeleteExpense }) => {
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
   const [convertedAmount, setConvertedAmount] = useState(null);
   const [isConverting, setIsConverting] = useState(false);
@@ -29,16 +20,16 @@ const Home = () => {
   const totalUSD = expenses.reduce((s, e) => s + e.amount, 0);
 
   const handleAddExpense = useCallback(exp => {
-    setExpenses(p => [{ ...exp, user: 'Me' }, ...p]);
+    onAddExpense(exp);
     setNotification('Expense added successfully!');
     setTimeout(() => setNotification(null), 3000);
-  }, []);
+  }, [onAddExpense]);
 
   const handleDeleteExpense = useCallback(id => {
-    setExpenses(p => p.filter(e => e.id !== id));
+    onDeleteExpense(id);
     setNotification('Expense deleted');
     setTimeout(() => setNotification(null), 3000);
-  }, []);
+  }, [onDeleteExpense]);
 
   const handleCurrencyChange = useCallback(cur => { setSelectedCurrency(cur); setIsConverting(true); }, []);
   const handleConvertedAmount = useCallback(amt => { setConvertedAmount(amt); setIsConverting(false); }, []);

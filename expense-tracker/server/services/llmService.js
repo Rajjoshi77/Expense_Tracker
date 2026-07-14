@@ -51,7 +51,11 @@ Respond helpfully based on the expense data context above. If relevant data exis
       return '⚠️ **Gemini API key not configured.** Please add your API key to `server/.env`.\n\nGet a free key at: [Google AI Studio](https://aistudio.google.com/apikey)';
     }
 
-    return '⚠️ Sorry, I encountered an error processing your request. Please try again.';
+    if (error.message?.includes('429')) {
+      return '⚠️ **Gemini API quota exceeded.** You have made too many requests. Please try again in a minute.';
+    }
+
+    return '⚠️ Sorry, I encountered an error processing your request. Please try again. Error: ' + error.message;
   }
 }
 
@@ -104,7 +108,7 @@ Only return valid JSON, nothing else.`;
  */
 export async function generateEmbedding(text) {
   try {
-    const model = genAI.getGenerativeModel({ model: 'text-embedding-004' });
+    const model = genAI.getGenerativeModel({ model: 'embedding-001' });
     const result = await model.embedContent(text);
     return result.embedding.values; // Returns float array
   } catch (error) {

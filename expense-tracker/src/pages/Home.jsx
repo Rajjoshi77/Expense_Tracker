@@ -8,6 +8,7 @@ import ExpenseList from '../components/ExpenseList';
 import CategoryBreakdown from '../components/CategoryBreakdown';
 import CurrencyConverter from '../components/CurrencyConverter';
 import AiInsightsPanel from '../components/AiInsightsPanel';
+import BudgetPredictionWidget from '../components/BudgetPredictionWidget';
 import groupImg from '../assets/group.jpg';
 import logoImg from '../assets/logo.png';
 
@@ -78,6 +79,7 @@ const Home = ({ expenses, onAddExpense, onDeleteExpense }) => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="space-y-6 lg:col-span-1">
             <ExpenseForm onAddExpense={handleAddExpense} />
+            <BudgetPredictionWidget />
             <AiInsightsPanel />
             <CategoryBreakdown expenses={expenses} selectedCurrency={selectedCurrency} />
 

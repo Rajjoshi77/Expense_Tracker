@@ -170,9 +170,79 @@ export async function generateEmbedding(text) {
   return null;
 }
 
+/**
+ * Analyze CSV structure and map headers to transaction fields
+ */
+export async function analyzeCSVStructure(headers, sampleRows) {
+  const prompt = `You are a bank statement analysis bot.
+We have a CSV file with these headers: ${JSON.stringify(headers)}
+And these sample rows: ${JSON.stringify(sampleRows)}
+
+Analyze the headers and sample rows to determine which column index (0-based) corresponds to:
+- "date" (transaction date)
+- "description" (merchant or transaction description)
+- "amount" (amount spent or received)
+- "debit" (if separate debit/withdrawal column exists)
+- "credit" (if separate credit/deposit column exists)
+
+Also determine if amounts are generally negative for expenses (debits) when in a single "amount" column.
+
+Return a JSON object with this exact structure:
+{
+  "dateIndex": 0,
+  "descriptionIndex": 1,
+  "amountIndex": 2,
+  "debitIndex": -1,
+  "creditIndex": -1,
+  "isAmountNegativeForExpense": false
+}
+Note: If a field doesn't exist or is not applicable, use -1. Do not include any other text or markdown block formatting.`;
+
+  try {
+    const responseText = await generateTextWithFallback(prompt);
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0]);
+    }
+  } catch (error) {
+    console.error('analyzeCSVStructure Error:', error.message);
+  }
+  return null;
+}
+
+/**
+ * Batch classify categories for a list of transaction descriptions
+ */
+export async function classifyTransactionsBatch(descriptions) {
+  if (!descriptions || descriptions.length === 0) return [];
+
+  const prompt = `You are a financial classification assistant. Categorize these transaction descriptions into one of these standard categories: Food, Shopping, Entertainment, Utilities, Travel, Health, Subscriptions, Other.
+
+Descriptions:
+${JSON.stringify(descriptions)}
+
+Return a JSON array of strings in the exact same order as the input descriptions, representing the classified category for each transaction. Example format:
+["Food", "Utilities", "Travel"]
+Do not return any other text, just the raw JSON array.`;
+
+  try {
+    const responseText = await generateTextWithFallback(prompt);
+    const jsonMatch = responseText.match(/\[[\s\S]*\]/);
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0]);
+    }
+  } catch (error) {
+    console.error('classifyTransactionsBatch Error:', error.message);
+  }
+  // Fallback to "Other" for all
+  return descriptions.map(() => 'Other');
+}
+
 export default {
   generateChatResponse,
   generateInsights,
   generateEmbedding,
+  analyzeCSVStructure,
+  classifyTransactionsBatch,
 };
 

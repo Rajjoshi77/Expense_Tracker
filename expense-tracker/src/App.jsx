@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import Home   from './pages/Home';
 import Analysis from './pages/Analysis';
 import AiChat from './pages/AiChat';
+import Import from './pages/Import';
 import DogAnimation from './components/DogAnimation';
 import { expenseApi } from './services/api';
 
@@ -57,6 +58,7 @@ function App() {
         <Route path="/" element={<Home expenses={expenses} onAddExpense={handleAddExpense} onDeleteExpense={handleDeleteExpense} />} />
         <Route path="/analysis" element={<Analysis expenses={expenses} />} />
         <Route path="/ai" element={<AiChat />} />
+        <Route path="/import" element={<Import />} />
       </Routes>
       <DogAnimation />
     </div>

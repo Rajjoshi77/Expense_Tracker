@@ -46,4 +46,27 @@ export const subscriptionApi = {
   delete: (id) => API.delete(`/subscriptions/${id}`).then(r => r.data),
 };
 
+// ── OCR API ─────────────────────────────────────────
+
+export const ocrApi = {
+  scanReceipt: (formData) => API.post('/ocr/receipt', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }).then(r => r.data),
+};
+
+// ── Import API ──────────────────────────────────────
+
+export const importApi = {
+  parseStatement: (formData) => API.post('/import/bank-statement', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }).then(r => r.data),
+  confirmImport: (transactions) => API.post('/import/confirm', { transactions }).then(r => r.data),
+};
+
+// ── Prediction API ──────────────────────────────────
+
+export const predictionApi = {
+  getForecast: () => API.get('/predictions/forecast').then(r => r.data),
+};
+
 export default API;

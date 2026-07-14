@@ -29,7 +29,7 @@ Current date: ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 
  */
 export async function generateChatResponse(userMessage, context = '') {
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
 
     const prompt = `${SYSTEM_PROMPT}
 
@@ -64,7 +64,7 @@ Respond helpfully based on the expense data context above. If relevant data exis
  */
 export async function generateInsights(expenseData) {
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
 
     const prompt = `${SYSTEM_PROMPT}
 

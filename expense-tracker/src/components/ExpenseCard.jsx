@@ -65,7 +65,7 @@ const ExpenseCard = ({ expense, onDelete, index }) => {
 
       <div className="text-right flex-shrink-0">
         <p className="text-sm font-bold font-display text-ink">
-          ${amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+          ₹{amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
         </p>
       </div>
 

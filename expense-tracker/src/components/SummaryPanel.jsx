@@ -33,30 +33,30 @@ const Trend = ({ positive = true, value }) => (
 );
 
 const SummaryPanel = ({ expenses, convertedAmount, selectedCurrency, isConverting }) => {
-  const totalAmountUSD = expenses.reduce((s, e) => s + e.amount, 0);
+  const totalAmountINR = expenses.reduce((s, e) => s + e.amount, 0);
   const expenseCount = expenses.length;
   const currencyConfig = CURRENCIES.find(c => c.code === selectedCurrency) || CURRENCIES[0];
 
-  const catTotalsUSD = CATEGORIES.map(cat => ({
+  const catTotalsINR = CATEGORIES.map(cat => ({
     ...cat,
     total: expenses.filter(e => e.category === cat.value).reduce((s, e) => s + e.amount, 0),
   })).sort((a, b) => b.total - a.total);
-  const topCat = catTotalsUSD[0];
+  const topCat = catTotalsINR[0];
 
-  const avgAmountUSD = expenseCount > 0 ? totalAmountUSD / expenseCount : 0;
+  const avgAmountINR = expenseCount > 0 ? totalAmountINR / expenseCount : 0;
 
-  const BASE_BUDGET_USD = 2500;
-  const exchangeRate = (convertedAmount && totalAmountUSD > 0) ? (convertedAmount / totalAmountUSD) : 1;
-  const currentBudget = BASE_BUDGET_USD * exchangeRate;
-  const currentTotal = selectedCurrency === 'USD' ? totalAmountUSD : (convertedAmount || 0);
+  const BASE_BUDGET_INR = 25000;
+  const exchangeRate = (convertedAmount && totalAmountINR > 0) ? (convertedAmount / totalAmountINR) : 1;
+  const currentBudget = BASE_BUDGET_INR * exchangeRate;
+  const currentTotal = selectedCurrency === 'INR' ? totalAmountINR : (convertedAmount || 0);
 
-  const budgetUsedPercent = Math.min(Math.round((totalAmountUSD / BASE_BUDGET_USD) * 100), 100);
+  const budgetUsedPercent = Math.min(Math.round((totalAmountINR / BASE_BUDGET_INR) * 100), 100);
   const remainingBudget = Math.max(currentBudget - currentTotal, 0);
 
   const stats = [
     {
-      label:   'Total Spent (USD)',
-      value:   `$${totalAmountUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      label:   'Total Spent (INR)',
+      value:   `₹${totalAmountINR.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       sub:     `${expenseCount} transaction${expenseCount !== 1 ? 's' : ''}`,
       trend:   { positive: false, label: '+12.4%' },
       sparkColor: '#4F46E5',
@@ -76,7 +76,7 @@ const SummaryPanel = ({ expenses, convertedAmount, selectedCurrency, isConvertin
     },
     {
       label:   'Avg. Transaction',
-      value:   `$${avgAmountUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      value:   `₹${avgAmountINR.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       sub:     'Per expense average',
       trend:   { positive: true, label: '-3.2%' },
       sparkColor: '#10B981',
@@ -85,7 +85,7 @@ const SummaryPanel = ({ expenses, convertedAmount, selectedCurrency, isConvertin
     {
       label:   'Top Category',
       value:   topCat?.total > 0 ? topCat.label : '—',
-      sub:     topCat?.total > 0 ? `$${topCat.total.toFixed(2)} · ${topCat.count ?? 0} items` : 'No data',
+      sub:     topCat?.total > 0 ? `₹${topCat.total.toFixed(2)} · ${topCat.count ?? 0} items` : 'No data',
       trend:   null,
       sparkColor: '#F59E0B',
       id: 'stat-top-cat',
@@ -144,7 +144,7 @@ const SummaryPanel = ({ expenses, convertedAmount, selectedCurrency, isConvertin
               className="flex items-baseline gap-3"
             >
               <span className="font-display text-5xl md:text-6xl font-bold text-ink tracking-tight">
-                {currencyConfig.symbol}{currentTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {currencyConfig.symbol}{currentTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </motion.div>
             <p className="text-body mt-2">
@@ -172,7 +172,7 @@ const SummaryPanel = ({ expenses, convertedAmount, selectedCurrency, isConvertin
             </p>
 
             <div className="flex flex-wrap gap-1.5 mt-3">
-              {catTotalsUSD.filter(c => c.total > 0).slice(0, 3).map(cat => (
+              {catTotalsINR.filter(c => c.total > 0).slice(0, 3).map(cat => (
                 <span key={cat.value} className="badge badge-gray text-[11px]">
                   <span className="w-1.5 h-1.5 rounded-full" style={{ background: cat.color }} />
                   {cat.value}

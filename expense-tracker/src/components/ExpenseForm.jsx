@@ -107,7 +107,7 @@ const ExpenseForm = ({ onAddExpense }) => {
         <div>
           <label htmlFor="expense-amount" className="label">Amount</label>
           <div className="relative">
-            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-ink-muted font-medium select-none">$</span>
+            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-ink-muted font-medium select-none">₹</span>
             <input
               id="expense-amount"
               name="amount"

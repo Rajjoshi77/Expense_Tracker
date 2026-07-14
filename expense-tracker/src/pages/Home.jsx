@@ -11,13 +11,13 @@ import groupImg from '../assets/group.jpg';
 import logoImg from '../assets/logo.png';
 
 const Home = ({ expenses, onAddExpense, onDeleteExpense }) => {
-  const [selectedCurrency, setSelectedCurrency] = useState('USD');
+  const [selectedCurrency, setSelectedCurrency] = useState('INR');
   const [convertedAmount, setConvertedAmount] = useState(null);
   const [isConverting, setIsConverting] = useState(false);
   const [copying, setCopying] = useState(false);
   const [notification, setNotification] = useState(null);
 
-  const totalUSD = expenses.reduce((s, e) => s + e.amount, 0);
+  const totalINR = expenses.reduce((s, e) => s + e.amount, 0);
 
   const handleAddExpense = useCallback(exp => {
     onAddExpense(exp);
@@ -113,7 +113,7 @@ const Home = ({ expenses, onAddExpense, onDeleteExpense }) => {
             </div>
 
             <CurrencyConverter
-              totalUSD={totalUSD}
+              totalINR={totalINR}
               selectedCurrency={selectedCurrency}
               onCurrencyChange={handleCurrencyChange}
               onConvertedAmount={handleConvertedAmount}

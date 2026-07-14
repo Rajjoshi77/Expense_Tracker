@@ -68,7 +68,7 @@ const Analysis = ({ expenses }) => {
         <div className="bg-surface border border-border p-3 rounded-lg shadow-xl">
           <p className="text-sm font-semibold text-ink mb-1">{label || payload[0].name}</p>
           <p className="text-sm text-primary font-bold">
-            ${payload[0].value.toFixed(2)}
+            ₹{payload[0].value.toFixed(2)}
           </p>
         </div>
       );
@@ -93,7 +93,7 @@ const Analysis = ({ expenses }) => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }} className="card p-6 bg-gradient-to-br from-indigo-500 to-indigo-700 text-white shadow-primary">
             <h3 className="text-sm font-medium opacity-80 mb-1">Total Spent</h3>
-            <p className="text-3xl font-bold">${total.toFixed(2)}</p>
+            <p className="text-3xl font-bold">₹{total.toFixed(2)}</p>
           </motion.div>
           
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }} className="card p-6 flex flex-col justify-between border-l-4" style={{ borderLeftColor: TYPE_COLORS.Recurring }}>
@@ -101,7 +101,7 @@ const Analysis = ({ expenses }) => {
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: TYPE_COLORS.Recurring }} />
               <h3 className="text-sm font-medium text-ink-muted">Recurring Expenses</h3>
             </div>
-            <p className="text-2xl font-bold text-ink">${(byType.find(t => t.name === 'Recurring')?.value || 0).toFixed(2)}</p>
+            <p className="text-2xl font-bold text-ink">₹{(byType.find(t => t.name === 'Recurring')?.value || 0).toFixed(2)}</p>
           </motion.div>
 
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }} className="card p-6 flex flex-col justify-between border-l-4" style={{ borderLeftColor: TYPE_COLORS.Regular }}>
@@ -109,7 +109,7 @@ const Analysis = ({ expenses }) => {
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: TYPE_COLORS.Regular }} />
               <h3 className="text-sm font-medium text-ink-muted">Regular Expenses</h3>
             </div>
-            <p className="text-2xl font-bold text-ink">${(byType.find(t => t.name === 'Regular')?.value || 0).toFixed(2)}</p>
+            <p className="text-2xl font-bold text-ink">₹{(byType.find(t => t.name === 'Regular')?.value || 0).toFixed(2)}</p>
           </motion.div>
 
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4 }} className="card p-6 flex flex-col justify-between border-l-4" style={{ borderLeftColor: TYPE_COLORS.Personal }}>
@@ -117,7 +117,7 @@ const Analysis = ({ expenses }) => {
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: TYPE_COLORS.Personal }} />
               <h3 className="text-sm font-medium text-ink-muted">Personal Expenses</h3>
             </div>
-            <p className="text-2xl font-bold text-ink">${(byType.find(t => t.name === 'Personal')?.value || 0).toFixed(2)}</p>
+            <p className="text-2xl font-bold text-ink">₹{(byType.find(t => t.name === 'Personal')?.value || 0).toFixed(2)}</p>
           </motion.div>
         </div>
 
@@ -149,7 +149,7 @@ const Analysis = ({ expenses }) => {
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none pb-8">
                  <div className="text-center">
                     <p className="text-xs text-ink-muted uppercase tracking-widest">Total</p>
-                    <p className="text-xl font-bold text-ink">${total.toFixed(0)}</p>
+                    <p className="text-xl font-bold text-ink">₹{total.toFixed(0)}</p>
                  </div>
               </div>
             </div>

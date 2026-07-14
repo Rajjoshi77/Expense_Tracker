@@ -4,7 +4,7 @@ import { fetchExchangeRates, convertAmount } from '../services/currencyApi';
 import { CURRENCIES } from '../data/categories';
 import Loader from './Loader';
 
-const CurrencyConverter = ({ totalUSD, selectedCurrency, onCurrencyChange, onConvertedAmount }) => {
+const CurrencyConverter = ({ totalINR, selectedCurrency, onCurrencyChange, onConvertedAmount }) => {
   const [rates,       setRates]       = useState(null);
   const [loading,     setLoading]     = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
@@ -12,7 +12,7 @@ const CurrencyConverter = ({ totalUSD, selectedCurrency, onCurrencyChange, onCon
 
   const loadRates = useCallback(async () => {
     setLoading(true);
-    const result = await fetchExchangeRates('USD');
+    const result = await fetchExchangeRates('INR');
     setRates(result.rates);
     setLastUpdated(result.date);
     setIsLive(result.isLive !== false);
@@ -23,15 +23,15 @@ const CurrencyConverter = ({ totalUSD, selectedCurrency, onCurrencyChange, onCon
 
   useEffect(() => {
     if (!rates) return;
-    const val = selectedCurrency === 'USD'
-      ? totalUSD
-      : convertAmount(totalUSD, 'USD', selectedCurrency, rates);
+    const val = selectedCurrency === 'INR'
+      ? totalINR
+      : convertAmount(totalINR, 'INR', selectedCurrency, rates);
     onConvertedAmount(val);
-  }, [rates, totalUSD, selectedCurrency, onConvertedAmount]);
+  }, [rates, totalINR, selectedCurrency, onConvertedAmount]);
 
   const currConfig = CURRENCIES.find(c => c.code === selectedCurrency) || CURRENCIES[0];
   const converted  = rates
-    ? (selectedCurrency === 'USD' ? totalUSD : convertAmount(totalUSD, 'USD', selectedCurrency, rates))
+    ? (selectedCurrency === 'INR' ? totalINR : convertAmount(totalINR, 'INR', selectedCurrency, rates))
     : null;
 
   return (
@@ -99,11 +99,11 @@ const CurrencyConverter = ({ totalUSD, selectedCurrency, onCurrencyChange, onCon
 
       <div className="rounded-xl bg-surface-50 border border-border p-4">
         <div className="flex items-center gap-2.5 mb-3">
-          <div className="w-8 h-8 rounded-lg border border-border bg-surface flex items-center justify-center text-sm">🇺🇸</div>
+          <div className="w-8 h-8 rounded-lg border border-border bg-surface flex items-center justify-center text-sm">🇮🇳</div>
           <div>
-            <p className="text-caption">From · USD</p>
+            <p className="text-caption">From · INR</p>
             <p className="text-sm font-bold font-display text-ink">
-              ${totalUSD.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              ₹{totalINR.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
             </p>
           </div>
         </div>
@@ -139,7 +139,7 @@ const CurrencyConverter = ({ totalUSD, selectedCurrency, onCurrencyChange, onCon
                 >
                   {currConfig.symbol}
                   {converted !== null
-                    ? converted.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                    ? converted.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                     : '—'}
                 </motion.p>
               )}

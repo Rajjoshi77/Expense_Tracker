@@ -47,7 +47,7 @@ const ExpenseList = ({ expenses, onDelete }) => {
           <p className="text-caption mt-0.5">
             {items.length} of {expenses.length} shown
             {items.length > 0 &&
-              ` · $${totalFiltered.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} total`
+              ` · ₹${totalFiltered.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} total`
             }
           </p>
         </div>

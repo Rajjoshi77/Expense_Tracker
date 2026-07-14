@@ -172,38 +172,50 @@ router.post('/confirm', async (req, res) => {
 
     console.log(`[Import Confirm] Importing ${transactions.length} transactions...`);
 
-    const createdExpenses = [];
+    let confirmCount = 0;
 
     for (const tx of transactions) {
-      // Ignore Income type transactions for now (or treat them as Regular if they are classified as expenses by the user)
-      const expense = await prisma.expense.create({
-        data: {
-          name: tx.name.trim(),
-          amount: parseFloat(tx.amount),
-          category: tx.category || 'Other',
-          type: tx.type || 'Regular',
-          date: new Date(tx.date),
-          merchant: tx.merchant?.trim() || null,
-          note: tx.note?.trim() || null,
-          user: 'Me'
-        }
-      });
-
-      createdExpenses.push(expense);
-
-      // Async embed each expense
-      embedExpense(expense)
-        .then(emb => {
-          if (emb) console.log(`[Import Confirm] Generated vector for: ${expense.name}`);
-        })
-        .catch(err => {
-          console.error(`[Import Confirm] Embedding fail for ${expense.name}:`, err.message);
+      if (tx.type === 'Income') {
+        await prisma.income.create({
+          data: {
+            source: tx.name.trim(),
+            amount: parseFloat(tx.amount),
+            date: new Date(tx.date),
+            isRecurring: false,
+            note: tx.note?.trim() || null
+          }
         });
+        confirmCount++;
+      } else {
+        const expense = await prisma.expense.create({
+          data: {
+            name: tx.name.trim(),
+            amount: parseFloat(tx.amount),
+            category: tx.category || 'Other',
+            type: tx.type || 'Regular',
+            date: new Date(tx.date),
+            merchant: tx.merchant?.trim() || null,
+            note: tx.note?.trim() || null,
+            user: 'Me'
+          }
+        });
+
+        confirmCount++;
+
+        // Async embed each expense
+        embedExpense(expense)
+          .then(emb => {
+            if (emb) console.log(`[Import Confirm] Generated vector for: ${expense.name}`);
+          })
+          .catch(err => {
+            console.error(`[Import Confirm] Embedding fail for ${expense.name}:`, err.message);
+          });
+      }
     }
 
     return res.json({
       success: true,
-      count: createdExpenses.length
+      count: confirmCount
     });
   } catch (error) {
     console.error('[Import Confirm] Error:', error.message);

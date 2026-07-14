@@ -9,6 +9,7 @@ import subscriptionRoutes from './routes/subscriptions.js';
 import ocrRoutes from './routes/ocr.js';
 import importRoutes from './routes/import.js';
 import predictionRoutes from './routes/predictions.js';
+import incomeRoutes from './routes/incomes.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -30,6 +31,7 @@ app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/ocr', ocrRoutes);
 app.use('/api/import', importRoutes);
 app.use('/api/predictions', predictionRoutes);
+app.use('/api/incomes', incomeRoutes);
 
 // ── Global error handler ────────────────────────────
 app.use((err, _req, res, _next) => {

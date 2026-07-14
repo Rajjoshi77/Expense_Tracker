@@ -69,4 +69,12 @@ export const predictionApi = {
   getForecast: () => API.get('/predictions/forecast').then(r => r.data),
 };
 
+// ── Income API ──────────────────────────────────────
+
+export const incomeApi = {
+  getAll: () => API.get('/incomes').then(r => r.data),
+  create: (data) => API.post('/incomes', data).then(r => r.data),
+  delete: (id) => API.delete(`/incomes/${id}`).then(r => r.data),
+};
+
 export default API;

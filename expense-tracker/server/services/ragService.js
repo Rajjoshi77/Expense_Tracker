@@ -14,16 +14,32 @@ import { generateChatResponse } from './llmService.js';
 /**
  * Build structured context from expenses for the LLM
  */
-function buildStructuredContext(expenses, stats, budgets, subscriptions) {
+function buildStructuredContext(expenses, stats, budgets, subscriptions, incomes = []) {
   const lines = [];
+
+  const totalIncome = incomes.reduce((s, i) => s + i.amount, 0);
+  const totalSpent = stats.totalSpent;
+  const netSavings = totalIncome - totalSpent;
 
   // ── Summary stats ──
   lines.push('## 📊 Financial Summary');
-  lines.push(`- Total expenses tracked: ${expenses.length}`);
-  lines.push(`- Total amount spent: ₹${stats.totalSpent.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`);
-  lines.push(`- Average transaction: ₹${stats.avgTransaction.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`);
+  lines.push(`- Total income tracked: ₹${totalIncome.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`);
+  lines.push(`- Total expenses tracked: ₹${totalSpent.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`);
+  lines.push(`- Net Savings / Cash Flow: ₹${netSavings.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`);
+  lines.push(`- Total transactions: ${expenses.length} expenses, ${incomes.length} incomes`);
+  lines.push(`- Average expense transaction: ₹${stats.avgTransaction.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`);
   lines.push(`- Date range: ${stats.dateRange}`);
   lines.push('');
+
+  // ── Income list ──
+  if (incomes.length > 0) {
+    lines.push('## 💵 Income Details');
+    incomes.slice(0, 10).forEach(i => {
+      const iDate = new Date(i.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+      lines.push(`- ${i.source}: ₹${i.amount.toLocaleString('en-IN')} on ${iDate} ${i.isRecurring ? '(Recurring)' : ''}`);
+    });
+    lines.push('');
+  }
 
   // ── Category breakdown ──
   if (stats.byCategory.length > 0) {
@@ -148,12 +164,13 @@ export async function processQuestion(userMessage) {
   // 3. Calculate structured stats from ALL expenses
   const stats = calculateStats(allExpenses);
 
-  // 4. Fetch budgets and subscriptions
+  // 4. Fetch budgets, subscriptions, and incomes
   const budgets = await prisma.budget.findMany();
   const subscriptions = await prisma.subscription.findMany({ where: { isActive: true } });
+  const incomes = await prisma.income.findMany({ orderBy: { date: 'desc' } });
 
   // 5. Build context
-  const structuredContext = buildStructuredContext(allExpenses, stats, budgets, subscriptions);
+  const structuredContext = buildStructuredContext(allExpenses, stats, budgets, subscriptions, incomes);
 
   // 6. Add semantically relevant expenses as detailed context
   let relevantContext = '';

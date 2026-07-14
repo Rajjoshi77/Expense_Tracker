@@ -104,14 +104,14 @@ const Import = () => {
 
   const handleCsvChange = (e) => {
     const file = e.target.files[0];
-    if (file && (file.name.endsWith('.csv') || file.type === 'text/csv')) {
+    if (file && (file.name.endsWith('.csv') || file.type === 'text/csv' || file.name.endsWith('.pdf') || file.type === 'application/pdf')) {
       setCsvFile(file);
       setParsedTransactions([]);
       setSelectedTx([]);
       setError(null);
       setSuccess(null);
     } else {
-      setError('Please upload a valid CSV bank statement file.');
+      setError('Please upload a valid CSV bank statement or PDF file.');
     }
   };
 
@@ -190,7 +190,7 @@ const Import = () => {
       {/* Page Header */}
       <div className="mb-8">
         <h1 className="text-heading-lg font-black text-ink">Smart Scan & Import</h1>
-        <p className="text-sm text-ink-muted">AI-powered digital receipt processing and automated CSV bank imports.</p>
+        <p className="text-sm text-ink-muted">AI-powered digital receipt processing and automated CSV/PDF bank imports.</p>
       </div>
 
       {/* Tabs Switcher */}
@@ -216,7 +216,7 @@ const Import = () => {
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
-          Bank Statement CSV
+          Bank Statement (CSV/PDF)
         </button>
       </div>
 
@@ -252,7 +252,7 @@ const Import = () => {
         <div className="lg:col-span-1">
           <div className="card p-6 bg-surface border border-border flex flex-col gap-6 relative">
             <h2 className="text-heading-sm font-extrabold text-ink">
-              {activeTab === 'receipt' ? 'Upload Receipt Image' : 'Select Bank CSV'}
+              {activeTab === 'receipt' ? 'Upload Receipt Image' : 'Select Bank Statement'}
             </h2>
 
             {activeTab === 'receipt' ? (
@@ -326,13 +326,13 @@ const Import = () => {
                 </button>
               </div>
             ) : (
-              // ── CSV statement upload area
+              // ── CSV/PDF statement upload area
               <div className="flex flex-col gap-4">
                 <input
                   type="file"
                   ref={csvInputRef}
                   onChange={handleCsvChange}
-                  accept=".csv"
+                  accept=".csv, .pdf, application/pdf"
                   className="hidden"
                 />
 
@@ -369,8 +369,8 @@ const Import = () => {
                       </svg>
                     </div>
                     <div className="text-center">
-                      <p className="text-xs font-bold text-ink mb-0.5">Click or drag bank CSV to upload</p>
-                      <p className="text-[10px] text-ink-muted">Plain text CSV statement file</p>
+                      <p className="text-xs font-bold text-ink mb-0.5">Click or drag CSV or PDF statement</p>
+                      <p className="text-[10px] text-ink-muted">Bank statement CSV or PDF file</p>
                     </div>
                   </div>
                 )}
@@ -389,7 +389,7 @@ const Import = () => {
                       Analyzing statement...
                     </>
                   ) : (
-                    'Analyze CSV structure'
+                    'Analyze Bank Statement'
                   )}
                 </button>
               </div>

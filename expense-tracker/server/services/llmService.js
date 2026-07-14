@@ -238,11 +238,68 @@ Do not return any other text, just the raw JSON array.`;
   return descriptions.map(() => 'Other');
 }
 
+/**
+ * Parses a PDF bank statement buffer using Gemini multimodal vision/document parsing.
+ */
+export async function parsePDFBankStatement(buffer) {
+  const pdfPart = {
+    inlineData: {
+      data: buffer.toString('base64'),
+      mimeType: 'application/pdf'
+    }
+  };
+
+  const prompt = `You are a bank statement analysis bot. Analyze this PDF bank statement carefully and extract the list of transactions.
+Identify:
+1. Date of each transaction (format as YYYY-MM-DD)
+2. Description or merchant details
+3. Amount (as a raw positive float number representing spending/debit. If it is a deposit/credit, flag its type as "Income", otherwise "Regular")
+4. Suggest a category (choose from: Food, Shopping, Entertainment, Utilities, Travel, Health, Subscriptions, Other)
+
+Return the result as a raw JSON array of objects with this exact structure:
+[
+  {
+    "name": "Transaction Description",
+    "amount": 1250.50,
+    "date": "2026-07-14",
+    "merchant": "Estimated Merchant",
+    "note": "Imported from PDF: full transaction details",
+    "type": "Regular",
+    "category": "Food"
+  }
+]
+
+Do not return any markdown formatting, only the valid JSON array.`;
+
+  let lastError = null;
+  for (const modelName of CHAT_MODELS) {
+    try {
+      console.log(`[Spendora AI] Attempting PDF statement parse with model: ${modelName}`);
+      const model = genAI.getGenerativeModel({ model: modelName });
+      const result = await model.generateContent([prompt, pdfPart]);
+      if (result && result.response) {
+        const text = result.response.text();
+        const jsonMatch = text.match(/\[[\s\S]*\]/);
+        if (jsonMatch) {
+          console.log(`[Spendora AI] Successfully parsed PDF statement using: ${modelName}`);
+          return JSON.parse(jsonMatch[0]);
+        }
+      }
+    } catch (error) {
+      console.warn(`[Spendora AI] PDF parsing failed with model ${modelName}:`, error.message);
+      lastError = error;
+    }
+  }
+
+  throw lastError || new Error('All models failed to parse the PDF bank statement.');
+}
+
 export default {
   generateChatResponse,
   generateInsights,
   generateEmbedding,
   analyzeCSVStructure,
   classifyTransactionsBatch,
+  parsePDFBankStatement,
 };
 

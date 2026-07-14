@@ -1,7 +1,7 @@
 import express from 'express';
 import multer from 'multer';
 import prisma from '../lib/prisma.js';
-import { analyzeCSVStructure, classifyTransactionsBatch } from '../services/llmService.js';
+import { analyzeCSVStructure, classifyTransactionsBatch, parsePDFBankStatement } from '../services/llmService.js';
 import { embedExpense } from '../services/embeddingService.js';
 
 const router = express.Router();
@@ -32,14 +32,27 @@ function parseCSV(text) {
 
 /**
  * POST /api/import/bank-statement
- * Parses uploaded CSV bank statement, maps headers using AI, classifies transactions, and returns them for review.
+ * Parses uploaded CSV or PDF bank statement using AI and returns them for review.
  */
 router.post('/bank-statement', upload.single('statement'), async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ error: 'No CSV file uploaded.' });
+      return res.status(400).json({ error: 'No statement file uploaded.' });
     }
 
+    const isPDF = req.file.mimetype === 'application/pdf' || req.file.originalname.toLowerCase().endsWith('.pdf');
+
+    if (isPDF) {
+      console.log(`[Import Route] Processing PDF statement using multimodal Gemini...`);
+      const transactions = await parsePDFBankStatement(req.file.buffer);
+      return res.json({
+        success: true,
+        isPDF: true,
+        transactions
+      });
+    }
+
+    // Process as CSV
     const csvText = req.file.buffer.toString('utf8');
     const parsedRows = parseCSV(csvText);
 

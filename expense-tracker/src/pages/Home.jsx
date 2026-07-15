@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Navbar from '../components/Navbar';
 import DashboardHero from '../components/DashboardHero';
 import SummaryPanel from '../components/SummaryPanel';
 import ExpenseForm from '../components/ExpenseForm';
@@ -12,7 +11,7 @@ import BudgetPredictionWidget from '../components/BudgetPredictionWidget';
 import groupImg from '../assets/group.jpg';
 import logoImg from '../assets/logo.png';
 
-const Home = ({ expenses, onAddExpense, onDeleteExpense }) => {
+const Home = ({ expenses, incomes = [], onAddExpense, onDeleteExpense, onAddIncome, onDeleteIncome }) => {
   const [selectedCurrency, setSelectedCurrency] = useState('INR');
   const [convertedAmount, setConvertedAmount] = useState(null);
   const [isConverting, setIsConverting] = useState(false);
@@ -32,6 +31,12 @@ const Home = ({ expenses, onAddExpense, onDeleteExpense }) => {
     setNotification('Expense deleted');
     setTimeout(() => setNotification(null), 3000);
   }, [onDeleteExpense]);
+
+  const handleAddIncome = useCallback(inc => {
+    onAddIncome(inc);
+    setNotification('Income added successfully!');
+    setTimeout(() => setNotification(null), 3000);
+  }, [onAddIncome]);
 
   const handleCurrencyChange = useCallback(cur => { setSelectedCurrency(cur); setIsConverting(true); }, []);
   const handleConvertedAmount = useCallback(amt => { setConvertedAmount(amt); setIsConverting(false); }, []);
@@ -65,11 +70,21 @@ const Home = ({ expenses, onAddExpense, onDeleteExpense }) => {
 
       <div className="container-app py-8">
 
-        <DashboardHero />
+        <DashboardHero onGetStarted={() => {
+          const el = document.getElementById('expense-form-container');
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const input = el.querySelector('input[type="text"]');
+            if (input) {
+              setTimeout(() => input.focus(), 600);
+            }
+          }
+        }} />
 
         <div className="mb-10">
           <SummaryPanel
             expenses={expenses}
+            incomes={incomes}
             convertedAmount={convertedAmount}
             selectedCurrency={selectedCurrency}
             isConverting={isConverting}
@@ -78,7 +93,9 @@ const Home = ({ expenses, onAddExpense, onDeleteExpense }) => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="space-y-6 lg:col-span-1">
-            <ExpenseForm onAddExpense={handleAddExpense} />
+            <div id="expense-form-container">
+              <ExpenseForm onAddExpense={handleAddExpense} onAddIncome={handleAddIncome} />
+            </div>
             <BudgetPredictionWidget />
             <AiInsightsPanel />
             <CategoryBreakdown expenses={expenses} selectedCurrency={selectedCurrency} />
@@ -126,7 +143,12 @@ const Home = ({ expenses, onAddExpense, onDeleteExpense }) => {
 
           <div className="lg:col-span-2">
             <div className="lg:sticky lg:top-20">
-              <ExpenseList expenses={expenses} onDelete={handleDeleteExpense} />
+              <ExpenseList 
+                expenses={expenses} 
+                incomes={incomes}
+                onDelete={handleDeleteExpense} 
+                onDeleteIncome={onDeleteIncome}
+              />
             </div>
           </div>
         </div>

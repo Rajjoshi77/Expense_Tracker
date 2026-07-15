@@ -4,7 +4,7 @@ import { ocrApi, importApi } from '../services/api';
 
 const categories = ['Food', 'Shopping', 'Entertainment', 'Utilities', 'Travel', 'Health', 'Subscriptions', 'Other'];
 
-const Import = () => {
+const Import = ({ onImportSuccess }) => {
   const [activeTab, setActiveTab] = useState('receipt'); // 'receipt' or 'csv'
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -90,10 +90,13 @@ const Import = () => {
         setExtractedData(null);
         setReceiptFile(null);
         setReceiptPreview(null);
+        if (onImportSuccess) {
+          onImportSuccess();
+        }
       } else {
         setError(data.error || 'Failed to save expense.');
       }
-    } catch (err) {
+    } catch {
       setError('Failed to save scanned expense.');
     } finally {
       setLoading(false);
@@ -175,10 +178,13 @@ const Import = () => {
         setParsedTransactions([]);
         setSelectedTx([]);
         setCsvFile(null);
+        if (onImportSuccess) {
+          onImportSuccess();
+        }
       } else {
         setError(response.error || 'Failed to complete import.');
       }
-    } catch (err) {
+    } catch {
       setError('Error while importing transactions.');
     } finally {
       setLoading(false);
@@ -527,6 +533,7 @@ const Import = () => {
                         </th>
                         <th className="py-3 px-3 text-[10px] font-bold text-ink-muted uppercase tracking-wider w-24">Date</th>
                         <th className="py-3 px-3 text-[10px] font-bold text-ink-muted uppercase tracking-wider">Description</th>
+                        <th className="py-3 px-3 text-[10px] font-bold text-ink-muted uppercase tracking-wider w-28">Type</th>
                         <th className="py-3 px-3 text-[10px] font-bold text-ink-muted uppercase tracking-wider w-36">Category</th>
                         <th className="py-3 px-3 text-[10px] font-bold text-ink-muted uppercase tracking-wider w-24 text-right">Amount (₹)</th>
                       </tr>
@@ -567,14 +574,30 @@ const Import = () => {
                             </td>
                             <td className="py-3 px-3">
                               <select
-                                value={tx.category}
-                                onChange={(e) => handleTxFieldChange(idx, 'category', e.target.value)}
-                                className="py-1 px-2 border border-slate-200/80 bg-white rounded-md text-xs w-full focus:ring-1 focus:ring-primary focus:outline-none"
+                                value={tx.type || 'Regular'}
+                                onChange={(e) => handleTxFieldChange(idx, 'type', e.target.value)}
+                                className="py-1 px-2 border border-slate-200/80 bg-white rounded-md text-xs w-full focus:ring-1 focus:ring-primary focus:outline-none font-semibold text-ink"
                               >
-                                {categories.map(cat => (
-                                  <option key={cat} value={cat}>{cat}</option>
-                                ))}
+                                <option value="Regular">Expense</option>
+                                <option value="Income">Income</option>
+                                <option value="Recurring">Recurring Exp</option>
+                                <option value="Personal">Personal Exp</option>
                               </select>
+                            </td>
+                            <td className="py-3 px-3">
+                              {tx.type === 'Income' ? (
+                                <span className="text-ink-muted italic text-[11px] px-2">N/A (Income)</span>
+                              ) : (
+                                <select
+                                  value={tx.category || 'Other'}
+                                  onChange={(e) => handleTxFieldChange(idx, 'category', e.target.value)}
+                                  className="py-1 px-2 border border-slate-200/80 bg-white rounded-md text-xs w-full focus:ring-1 focus:ring-primary focus:outline-none"
+                                >
+                                  {categories.map(cat => (
+                                    <option key={cat} value={cat}>{cat}</option>
+                                  ))}
+                                </select>
+                              )}
                             </td>
                             <td className="py-3 px-3 text-right font-bold text-ink">
                               <input

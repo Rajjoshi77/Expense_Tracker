@@ -1,9 +1,12 @@
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import phoneImg from '../assets/phone_image.png';
 
 const MUX_ANIMATED_URL = "https://image.mux.com/xOF6u3LVZZaZpwG027R7oeyOZgDDrFSq5300GYPWeanTg/animated.webp";
 
-const DashboardHero = () => {
+const DashboardHero = ({ onGetStarted }) => {
+  const [showDemoModal, setShowDemoModal] = useState(false);
+
   return (
     <section className="relative mb-10 overflow-hidden rounded-3xl bg-surface border border-border shadow-card p-8 lg:p-12">
       <div className="relative z-10 flex flex-col lg:flex-row items-center gap-10">
@@ -25,14 +28,15 @@ const DashboardHero = () => {
               The next generation of finance management. Track, analyze, and optimize your spending with our premium dashboard.
             </p>
             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4">
-              <button className="btn-primary btn-xl">Get Started Free</button>
-              <button className="btn-secondary btn-xl">Watch Demo</button>
+              <button onClick={onGetStarted} className="btn-primary btn-xl">Get Started Free</button>
+              <button onClick={() => setShowDemoModal(true)} className="btn-secondary btn-xl">Watch Demo</button>
             </div>
           </motion.div>
         </div>
 
         <div className="flex-1 relative w-full max-w-2xl">
           <motion.div
+            onClick={() => setShowDemoModal(true)}
             className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-white aspect-video bg-slate-100 group cursor-pointer"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -112,6 +116,73 @@ const DashboardHero = () => {
 
       <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-primary-50/30 to-transparent pointer-events-none" />
       <div className="absolute -top-24 -left-24 w-64 h-64 rounded-full bg-secondary-50 opacity-50 blur-3xl pointer-events-none" />
+
+      {/* Demo Video Modal */}
+      <AnimatePresence>
+        {showDemoModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/75 backdrop-blur-md"
+            onClick={() => setShowDemoModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-4xl bg-surface rounded-3xl overflow-hidden shadow-2xl border border-border flex flex-col"
+            >
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-5 border-b border-border bg-surface-50">
+                <div className="text-left">
+                  <h3 className="text-heading-sm text-ink font-bold">Mojito Expense Tracker - Walkthrough</h3>
+                  <p className="text-[11px] text-ink-muted">Learn how to track cashflow, scan receipts, and use AI forecasting.</p>
+                </div>
+                <button
+                  onClick={() => setShowDemoModal(false)}
+                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200/80 transition-colors flex items-center justify-center text-ink"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Video Player */}
+              <div className="aspect-video bg-black relative">
+                <video
+                  src="/demo_spendora.mp4"
+                  className="w-full h-full object-cover"
+                  autoPlay
+                  controls
+                  loop
+                />
+              </div>
+
+              {/* Modal Footer with quick features */}
+              <div className="p-6 bg-surface-50 grid grid-cols-3 gap-4 border-t border-border text-center">
+                <div className="p-3 bg-white border border-border/80 rounded-2xl">
+                  <span className="text-lg">🤖</span>
+                  <h4 className="text-xs font-bold text-ink mt-1">Smart AI Insights</h4>
+                  <p className="text-[10px] text-ink-muted">Get automated alerts on anomaly spikes & spend projections.</p>
+                </div>
+                <div className="p-3 bg-white border border-border/80 rounded-2xl">
+                  <span className="text-lg">📸</span>
+                  <h4 className="text-xs font-bold text-ink mt-1">Receipt Scanner</h4>
+                  <p className="text-[10px] text-ink-muted">Instantly scan invoice PDFs and images into records.</p>
+                </div>
+                <div className="p-3 bg-white border border-border/80 rounded-2xl">
+                  <span className="text-lg">📈</span>
+                  <h4 className="text-xs font-bold text-ink mt-1">Net Savings Charts</h4>
+                  <p className="text-[10px] text-ink-muted">Track monthly inflows against outflows with real-time conversion.</p>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 };

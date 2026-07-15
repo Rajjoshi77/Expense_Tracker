@@ -9,6 +9,24 @@ const API = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
+// Request interceptor to automatically attach authorization token
+API.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+}, (error) => {
+  return Promise.reject(error);
+});
+
+// ── Auth API ────────────────────────────────────────
+
+export const authApi = {
+  loginWithGoogle: (credential) => API.post('/auth/google', { credential }).then(r => r.data),
+  loginWithSandbox: (email) => API.post('/auth/sandbox', { email }).then(r => r.data),
+};
+
 // ── Expense API ─────────────────────────────────────
 
 export const expenseApi = {

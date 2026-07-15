@@ -50,7 +50,15 @@ const BudgetPredictionWidget = () => {
     );
   }
 
-  const { currentMonthTotal, forecastedTotal, runRateDaily, categoryForecasts, anomalies } = data;
+  const { 
+    currentMonthTotal, 
+    forecastedTotal, 
+    runRateDaily, 
+    forecastedSavings = 0, 
+    isDeficitRisk = false, 
+    categoryForecasts, 
+    anomalies 
+  } = data;
   const overshootCategories = categoryForecasts.filter(c => c.overshootRisk);
 
   return (
@@ -61,7 +69,7 @@ const BudgetPredictionWidget = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-xs font-black text-indigo-900 uppercase tracking-wider">AI Spend Forecast</h3>
+          <h3 className="text-xs font-black text-indigo-900 uppercase tracking-wider">AI Cashflow Forecast</h3>
           <p className="text-[10px] text-indigo-700/70">Calculated from current monthly run-rate</p>
         </div>
         <div className="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 text-[10px] font-bold">
@@ -69,10 +77,18 @@ const BudgetPredictionWidget = () => {
         </div>
       </div>
 
-      {/* Figures */}
-      <div className="flex items-baseline gap-2">
-        <span className="text-heading-md font-black text-indigo-950">₹{forecastedTotal.toLocaleString('en-IN')}</span>
-        <span className="text-[10px] text-indigo-700 font-semibold">predicted end-of-month</span>
+      {/* Forecast Figures */}
+      <div className="grid grid-cols-2 gap-4 border-b border-indigo-100/30 pb-3">
+        <div className="flex flex-col">
+          <span className="text-[9px] uppercase tracking-wider text-indigo-600/70 font-bold">Projected Spend</span>
+          <span className="text-heading-sm font-black text-indigo-950">₹{forecastedTotal.toLocaleString('en-IN')}</span>
+        </div>
+        <div className="flex flex-col">
+          <span className="text-[9px] uppercase tracking-wider text-indigo-600/70 font-bold">Projected Savings</span>
+          <span className={`text-heading-sm font-black ${forecastedSavings >= 0 ? 'text-success-600' : 'text-danger'}`}>
+            {forecastedSavings < 0 ? '-' : ''}₹{Math.abs(forecastedSavings).toLocaleString('en-IN')}
+          </span>
+        </div>
       </div>
 
       {/* Progress metrics */}
@@ -87,6 +103,25 @@ const BudgetPredictionWidget = () => {
           <span className="font-bold text-indigo-950">₹{runRateDaily.toLocaleString('en-IN')}/day</span>
         </div>
       </div>
+
+      {/* Deficit Warning */}
+      <AnimatePresence>
+        {isDeficitRisk && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            className="flex items-start gap-2 p-3 bg-danger-50 border border-danger-100/55 rounded-xl"
+          >
+            <svg className="w-4 h-4 text-danger shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <div className="flex flex-col gap-0.5 text-[10px] text-danger-700 font-semibold">
+              <span className="font-bold">Projected Cashflow Deficit</span>
+              <span>Your projected expenses exceed your projected income by ₹{Math.abs(forecastedSavings).toLocaleString('en-IN')} this month.</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Active warnings / alerts */}
       <AnimatePresence>

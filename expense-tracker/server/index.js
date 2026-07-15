@@ -10,6 +10,7 @@ import ocrRoutes from './routes/ocr.js';
 import importRoutes from './routes/import.js';
 import predictionRoutes from './routes/predictions.js';
 import incomeRoutes from './routes/incomes.js';
+import authRoutes from './routes/auth.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -32,9 +33,10 @@ app.use('/api/ocr', ocrRoutes);
 app.use('/api/import', importRoutes);
 app.use('/api/predictions', predictionRoutes);
 app.use('/api/incomes', incomeRoutes);
+app.use('/api/auth', authRoutes);
 
 // ── Global error handler ────────────────────────────
-app.use((err, _req, res, _next) => {
+app.use((err, _req, res, next) => { // eslint-disable-line no-unused-vars
   console.error('❌ Server Error:', err.message);
   res.status(err.status || 500).json({
     error: err.message || 'Internal server error',

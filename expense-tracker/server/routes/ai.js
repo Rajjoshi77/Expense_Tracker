@@ -5,8 +5,12 @@ import { Router } from 'express';
 import prisma from '../lib/prisma.js';
 import { processQuestion, searchExpenses } from '../services/ragService.js';
 import { generateSmartInsights } from '../services/insightsService.js';
+import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
+
+// Apply auth middleware to protect all AI endpoints
+router.use(requireAuth);
 
 // ── POST /api/ai/chat — Natural language query via RAG ──
 router.post('/chat', async (req, res, next) => {
@@ -17,19 +21,24 @@ router.post('/chat', async (req, res, next) => {
       return res.status(400).json({ error: 'message is required' });
     }
 
-    // Save user message
+    // Save user message scoped to userId
     await prisma.chatMessage.create({
-      data: { role: 'user', content: message.trim() },
+      data: { 
+        role: 'user', 
+        content: message.trim(),
+        userId: req.user.id
+      },
     });
 
-    // Process through RAG pipeline
-    const result = await processQuestion(message.trim());
+    // Process through RAG pipeline scoped to userId
+    const result = await processQuestion(message.trim(), req.user.id);
 
-    // Save AI response
+    // Save AI response scoped to userId
     await prisma.chatMessage.create({
       data: {
         role: 'assistant',
         content: result.answer,
+        userId: req.user.id,
         metadata: JSON.stringify({
           relevantExpenses: result.relevantExpenses,
           stats: result.stats,
@@ -56,10 +65,14 @@ router.post('/search', async (req, res, next) => {
       return res.status(400).json({ error: 'query is required' });
     }
 
-    const results = await searchExpenses(query.trim());
+    const results = await searchExpenses(query.trim(), req.user.id);
 
     // Strip embeddings from response
-    const cleaned = results.map(({ embedding, ...rest }) => rest);
+    const cleaned = results.map(item => {
+      const copy = { ...item };
+      delete copy.embedding;
+      return copy;
+    });
 
     res.json({ results: cleaned, count: cleaned.length });
   } catch (err) {
@@ -68,9 +81,9 @@ router.post('/search', async (req, res, next) => {
 });
 
 // ── GET /api/ai/insights — Generate smart insights ──
-router.get('/insights', async (_req, res, next) => {
+router.get('/insights', async (req, res, next) => {
   try {
-    const insights = await generateSmartInsights();
+    const insights = await generateSmartInsights(req.user.id);
     res.json({ insights });
   } catch (err) {
     next(err);
@@ -83,6 +96,7 @@ router.get('/history', async (req, res, next) => {
     const { limit = 50 } = req.query;
 
     const messages = await prisma.chatMessage.findMany({
+      where: { userId: req.user.id },
       orderBy: { createdAt: 'asc' },
       take: parseInt(limit),
       select: {
@@ -94,16 +108,6 @@ router.get('/history', async (req, res, next) => {
     });
 
     res.json(messages);
-  } catch (err) {
-    next(err);
-  }
-});
-
-// ── DELETE /api/ai/history — Clear chat history ──
-router.delete('/history', async (_req, res, next) => {
-  try {
-    await prisma.chatMessage.deleteMany();
-    res.json({ success: true });
   } catch (err) {
     next(err);
   }

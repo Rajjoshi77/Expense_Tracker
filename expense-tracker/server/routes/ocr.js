@@ -1,8 +1,12 @@
 import express from 'express';
 import multer from 'multer';
 import { parseReceiptImage } from '../services/ocrService.js';
+import { requireAuth } from '../middleware/auth.js';
 
 const router = express.Router();
+
+// Apply auth middleware to protect OCR endpoints
+router.use(requireAuth);
 
 // Configure Multer for memory storage (file buffer in memory)
 const upload = multer({

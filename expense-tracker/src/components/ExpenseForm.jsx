@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CATEGORIES, EXPENSE_TYPES } from '../data/categories';
-import { incomeApi } from '../services/api';
 
 const FieldError = ({ msg }) => (
   <AnimatePresence>
@@ -26,7 +25,7 @@ const FieldError = ({ msg }) => (
 
 const getEmptyForm = () => ({ name: '', amount: '', category: '', type: '', date: new Date().toISOString().split('T')[0] });
 
-const ExpenseForm = ({ onAddExpense }) => {
+const ExpenseForm = ({ onAddExpense, onAddIncome }) => {
   const [transactionType, setTransactionType] = useState('expense'); // 'expense' or 'income'
   const [form, setForm] = useState(getEmptyForm());
   const [errors, setErrors] = useState({});
@@ -63,14 +62,14 @@ const ExpenseForm = ({ onAddExpense }) => {
 
     if (transactionType === 'income') {
       try {
-        await incomeApi.create({
+        await onAddIncome({
           source: form.name.trim(),
           amount: parseFloat((+form.amount).toFixed(2)),
           date: new Date(form.date + 'T12:00:00').toISOString(),
           isRecurring: false,
         });
         setStatus('success');
-      } catch (err) {
+      } catch {
         setStatus('idle');
         setErrors({ general: 'Failed to save income record' });
         return;

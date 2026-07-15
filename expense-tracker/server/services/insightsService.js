@@ -7,8 +7,11 @@ import { generateInsights as llmInsights } from './llmService.js';
 /**
  * Generate rule-based + AI insights from spending data
  */
-export async function generateSmartInsights() {
-  const expenses = await prisma.expense.findMany({ orderBy: { date: 'desc' } });
+export async function generateSmartInsights(userId) {
+  const expenses = await prisma.expense.findMany({
+    where: { userId },
+    orderBy: { date: 'desc' }
+  });
 
   if (expenses.length === 0) {
     return [{

@@ -23,7 +23,7 @@ export const fetchExchangeRates = async (baseCurrency = 'USD') => {
       date: response.data.date,
       isLive: true,
     };
-  } catch (error) {
+  } catch {
 
     return {
       success: true,

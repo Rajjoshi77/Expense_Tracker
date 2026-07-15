@@ -29,3 +29,7 @@ server/prisma/*.db
 server/prisma/*.db-journal
 server/node_modules
 server/prisma/migrations
+
+# Local env files
+.env
+*.env.local

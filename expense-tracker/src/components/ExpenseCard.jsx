@@ -12,9 +12,14 @@ const EMOJI = {
   Other:     '📦',
 };
 
-const ExpenseCard = ({ expense, onDelete, index }) => {
-  const { name, amount, category, date, user = 'Me' } = expense;
-  const cat = getCategoryConfig(category);
+const ExpenseCard = ({ expense, onDelete, index, isIncome = false }) => {
+  const { amount, date, user = 'Me' } = expense;
+  
+  const title = isIncome ? expense.source : expense.name;
+  const emoji = isIncome ? '💵' : (EMOJI[expense.category] ?? '💳');
+  const catColor = isIncome ? '#10B981' : (getCategoryConfig(expense.category).color);
+  const catLabel = isIncome ? 'Income' : (getCategoryConfig(expense.category).label);
+  const typeLabel = isIncome ? (expense.isRecurring ? 'Recurring' : 'One-time') : expense.type;
 
   return (
     <motion.div
@@ -28,15 +33,15 @@ const ExpenseCard = ({ expense, onDelete, index }) => {
     >
       <div
         className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center text-base"
-        style={{ background: `${cat.color}14`, border: `1px solid ${cat.color}28` }}
+        style={{ background: `${catColor}14`, border: `1px solid ${catColor}28` }}
       >
-        {EMOJI[category] ?? '💳'}
+        {emoji}
       </div>
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-semibold text-ink truncate">{name}</p>
-          {user !== 'Me' && (
+          <p className="text-sm font-semibold text-ink truncate">{title}</p>
+          {user !== 'Me' && !isIncome && (
             <span className="flex-shrink-0 text-[10px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 font-medium">
               {user}
             </span>
@@ -49,23 +54,23 @@ const ExpenseCard = ({ expense, onDelete, index }) => {
         <span
           className="badge text-[11px] font-medium"
           style={{
-            background: `${cat.color}12`,
-            color: cat.color,
-            borderColor: `${cat.color}28`,
+            background: `${catColor}12`,
+            color: catColor,
+            borderColor: `${catColor}28`,
           }}
         >
-          {cat.label}
+          {catLabel}
         </span>
-        {expense.type && (
+        {typeLabel && (
           <span className="badge text-[11px] font-medium bg-slate-100 text-slate-600 border-slate-200">
-            {expense.type}
+            {typeLabel}
           </span>
         )}
       </div>
 
       <div className="text-right flex-shrink-0">
-        <p className="text-sm font-bold font-display text-ink">
-          ₹{amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+        <p className={`text-sm font-bold font-display ${isIncome ? 'text-success-600 font-extrabold' : 'text-ink'}`}>
+          {isIncome ? '+' : ''}₹{amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
         </p>
       </div>
 
@@ -77,7 +82,7 @@ const ExpenseCard = ({ expense, onDelete, index }) => {
                    transition-all duration-150 flex items-center justify-center
                    opacity-0 group-hover:opacity-100"
         whileTap={{ scale: 0.9 }}
-        aria-label={`Delete: ${name}`}
+        aria-label={`Delete: ${title}`}
       >
         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round"

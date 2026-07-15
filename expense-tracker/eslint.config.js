@@ -7,7 +7,8 @@ import { defineConfig, globalIgnores } from 'eslint/config'
 export default defineConfig([
   globalIgnores(['dist']),
   {
-    files: ['**/*.{js,jsx}'],
+    // Frontend configuration
+    files: ['src/**/*.{js,jsx}', 'eslint.config.js', 'vite.config.js', 'postcss.config.js', 'tailwind.config.js'],
     extends: [
       js.configs.recommended,
       reactHooks.configs.flat.recommended,
@@ -18,4 +19,17 @@ export default defineConfig([
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
   },
+  {
+    // Backend configuration
+    files: ['server/**/*.{js,jsx}'],
+    extends: [
+      js.configs.recommended,
+    ],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        fetch: 'readonly',
+      },
+    },
+  }
 ])

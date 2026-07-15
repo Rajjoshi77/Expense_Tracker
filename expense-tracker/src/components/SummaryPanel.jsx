@@ -32,63 +32,68 @@ const Trend = ({ positive = true, value }) => (
   </span>
 );
 
-const SummaryPanel = ({ expenses, convertedAmount, selectedCurrency, isConverting }) => {
+const SummaryPanel = ({ expenses, incomes = [], convertedAmount, selectedCurrency, isConverting }) => {
   const totalAmountINR = expenses.reduce((s, e) => s + e.amount, 0);
+  const totalIncomeINR = incomes.reduce((s, i) => s + i.amount, 0);
+  const netSavingsINR = totalIncomeINR - totalAmountINR;
+  const savingsRatePercent = totalIncomeINR > 0 ? Math.round((netSavingsINR / totalIncomeINR) * 100) : 0;
+
   const expenseCount = expenses.length;
+  const incomeCount = incomes.length;
   const currencyConfig = CURRENCIES.find(c => c.code === selectedCurrency) || CURRENCIES[0];
 
   const catTotalsINR = CATEGORIES.map(cat => ({
     ...cat,
     total: expenses.filter(e => e.category === cat.value).reduce((s, e) => s + e.amount, 0),
   })).sort((a, b) => b.total - a.total);
-  const topCat = catTotalsINR[0];
-
-  const avgAmountINR = expenseCount > 0 ? totalAmountINR / expenseCount : 0;
 
   const BASE_BUDGET_INR = 25000;
   const exchangeRate = (convertedAmount && totalAmountINR > 0) ? (convertedAmount / totalAmountINR) : 1;
   const currentBudget = BASE_BUDGET_INR * exchangeRate;
-  const currentTotal = selectedCurrency === 'INR' ? totalAmountINR : (convertedAmount || 0);
+  
+  // Calculate converted amounts using exchangeRate
+  const convertedTotalSpent = selectedCurrency === 'INR' ? totalAmountINR : (convertedAmount || 0);
+  const convertedNetSavings = selectedCurrency === 'INR' ? netSavingsINR : (netSavingsINR * exchangeRate);
 
   const budgetUsedPercent = Math.min(Math.round((totalAmountINR / BASE_BUDGET_INR) * 100), 100);
-  const remainingBudget = Math.max(currentBudget - currentTotal, 0);
+  const remainingBudget = Math.max(currentBudget - convertedTotalSpent, 0);
 
   const stats = [
     {
       label:   'Total Spent (INR)',
       value:   `₹${totalAmountINR.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-      sub:     `${expenseCount} transaction${expenseCount !== 1 ? 's' : ''}`,
-      trend:   { positive: false, label: '+12.4%' },
-      sparkColor: '#4F46E5',
+      sub:     `${expenseCount} expense${expenseCount !== 1 ? 's' : ''}`,
+      trend:   null,
+      sparkColor: '#EF4444',
       id: 'stat-total',
     },
     {
-      label:   `In ${selectedCurrency}`,
+      label:   'Total Earned (INR)',
+      value:   `₹${totalIncomeINR.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      sub:     `${incomeCount} income source${incomeCount !== 1 ? 's' : ''}`,
+      trend:   null,
+      sparkColor: '#10B981',
+      id: 'stat-income',
+    },
+    {
+      label:   'Savings Rate',
+      value:   `${savingsRatePercent}%`,
+      sub:     savingsRatePercent > 20 ? 'Strong savings profile' : savingsRatePercent > 0 ? 'Healthy surplus' : savingsRatePercent < 0 ? 'Deficit spending' : 'Balanced cashflow',
+      trend:   null,
+      sparkColor: '#F59E0B',
+      id: 'stat-savings-rate',
+    },
+    {
+      label:   `Spent in ${selectedCurrency}`,
       value:   isConverting
         ? '—'
         : convertedAmount !== null
           ? `${currencyConfig.symbol}${convertedAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
           : '—',
-      sub:     'Live rate · Frankfurter API',
+      sub:     'Live FX · Frankfurter API',
       trend:   null,
       sparkColor: '#7C3AED',
       id: 'stat-converted',
-    },
-    {
-      label:   'Avg. Transaction',
-      value:   `₹${avgAmountINR.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-      sub:     'Per expense average',
-      trend:   { positive: true, label: '-3.2%' },
-      sparkColor: '#10B981',
-      id: 'stat-avg',
-    },
-    {
-      label:   'Top Category',
-      value:   topCat?.total > 0 ? topCat.label : '—',
-      sub:     topCat?.total > 0 ? `₹${topCat.total.toFixed(2)} · ${topCat.count ?? 0} items` : 'No data',
-      trend:   null,
-      sparkColor: '#F59E0B',
-      id: 'stat-top-cat',
     },
   ];
 
@@ -103,7 +108,7 @@ const SummaryPanel = ({ expenses, convertedAmount, selectedCurrency, isConvertin
         <div>
           <p className="text-overline mb-1.5">Financial Overview</p>
           <h1 className="text-display-md text-ink">
-            Spending{' '}
+            Cashflow{' '}
             <span className="text-gradient-primary">Dashboard</span>
           </h1>
         </div>
@@ -120,7 +125,7 @@ const SummaryPanel = ({ expenses, convertedAmount, selectedCurrency, isConvertin
       </motion.div>
 
       <motion.div
-        className="card p-6 md:p-8 mb-4 relative overflow-hidden bg-white"
+        className={`card p-6 md:p-8 mb-4 relative overflow-hidden bg-white border-l-8 ${netSavingsINR >= 0 ? 'border-success-500' : 'border-danger-500'}`}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.05 }}
@@ -135,28 +140,26 @@ const SummaryPanel = ({ expenses, convertedAmount, selectedCurrency, isConvertin
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
             <p className="text-caption mb-1 uppercase tracking-widest font-semibold text-ink-muted">
-              Current Balance ({selectedCurrency})
+              Net Savings ({selectedCurrency})
             </p>
             <motion.div
-              key={currentTotal}
+              key={convertedNetSavings}
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
               className="flex items-baseline gap-3"
             >
-              <span className="font-display text-5xl md:text-6xl font-bold text-ink tracking-tight">
-                {currencyConfig.symbol}{currentTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              <span className={`font-display text-5xl md:text-6xl font-bold tracking-tight ${netSavingsINR >= 0 ? 'text-success-600' : 'text-danger'}`}>
+                {convertedNetSavings < 0 ? '-' : ''}{currencyConfig.symbol}{Math.abs(convertedNetSavings).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </motion.div>
             <p className="text-body mt-2">
-              {expenseCount > 0
-                ? `Total spending across ${expenseCount} transaction${expenseCount !== 1 ? 's' : ''}`
-                : 'No expenses tracked yet — add your first one below'}
+              Inflows of <span className="font-bold text-success-600">₹{totalIncomeINR.toLocaleString('en-IN')}</span> against outflows of <span className="font-bold text-danger">₹{totalAmountINR.toLocaleString('en-IN')}</span>
             </p>
           </div>
 
           <div className="md:min-w-[240px]">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-ink-secondary">Monthly Budget</span>
+              <span className="text-xs font-medium text-ink-secondary">Budget Usage</span>
               <span className="text-xs font-semibold text-ink">{budgetUsedPercent}%</span>
             </div>
             <div className="progress-track mb-1">
@@ -168,7 +171,7 @@ const SummaryPanel = ({ expenses, convertedAmount, selectedCurrency, isConvertin
               />
             </div>
             <p className="text-caption">
-              {currencyConfig.symbol}{currentBudget.toLocaleString(undefined, { maximumFractionDigits: 0 })} budget · {currencyConfig.symbol}{remainingBudget.toLocaleString(undefined, { maximumFractionDigits: 0 })} left
+              {currencyConfig.symbol}{currentBudget.toLocaleString(undefined, { maximumFractionDigits: 0 })} limit · {currencyConfig.symbol}{remainingBudget.toLocaleString(undefined, { maximumFractionDigits: 0 })} left
             </p>
 
             <div className="flex flex-wrap gap-1.5 mt-3">

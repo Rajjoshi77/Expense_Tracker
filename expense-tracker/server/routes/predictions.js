@@ -1,7 +1,11 @@
 import express from 'express';
 import { getSpendForecast } from '../services/predictionService.js';
+import { requireAuth } from '../middleware/auth.js';
 
 const router = express.Router();
+
+// Apply auth middleware to protect prediction endpoints
+router.use(requireAuth);
 
 /**
  * GET /api/predictions/forecast
@@ -9,7 +13,7 @@ const router = express.Router();
  */
 router.get('/forecast', async (req, res) => {
   try {
-    const forecastData = await getSpendForecast();
+    const forecastData = await getSpendForecast(req.user.id);
     return res.json({
       success: true,
       data: forecastData

@@ -10,6 +10,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  name          String?
+  avatarUrl     String?
+  expenses      Expense[]
+  incomes       Income[]
+  budgets       Budget[]
+  subscriptions Subscription[]
+  chats         ChatMessage[]
+  createdAt     DateTime       @default(now())
+}
+
 model Expense {
   id        String   @id @default(uuid())
   name      String
@@ -20,6 +33,8 @@ model Expense {
   merchant  String?
   note      String?
   user      String   @default("Me")
+  userId    String?
+  userRef   User?    @relation(fields: [userId], references: [id])
   embedding String?  // JSON-serialized float array for vector search
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -30,9 +45,11 @@ model Budget {
   category     String
   monthlyLimit Float
   month        String // "2026-07" format
+  userId       String?
+  userRef      User?    @relation(fields: [userId], references: [id])
   createdAt    DateTime @default(now())
 
-  @@unique([category, month])
+  @@unique([category, month, userId])
 }
 
 model Income {
@@ -42,6 +59,8 @@ model Income {
   date        DateTime
   isRecurring Boolean  @default(false)
   note        String?
+  userId      String?
+  userRef     User?    @relation(fields: [userId], references: [id])
   createdAt   DateTime @default(now())
 }
 
@@ -54,6 +73,8 @@ model Subscription {
   isActive     Boolean @default(true)
   startDate    DateTime @default(now())
   note         String?
+  userId       String?
+  userRef      User?    @relation(fields: [userId], references: [id])
   createdAt    DateTime @default(now())
 }
 
@@ -62,5 +83,7 @@ model ChatMessage {
   role      String   // "user" or "assistant"
   content   String
   metadata  String?  // JSON string for extra data (expense refs, etc.)
+  userId    String?
+  userRef   User?    @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
 }

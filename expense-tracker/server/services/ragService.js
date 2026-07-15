@@ -151,9 +151,12 @@ function calculateStats(expenses) {
 /**
  * Main RAG pipeline — process a user question
  */
-export async function processQuestion(userMessage) {
-  // 1. Fetch all expenses from DB
-  const allExpenses = await prisma.expense.findMany({ orderBy: { date: 'desc' } });
+export async function processQuestion(userMessage, userId) {
+  // 1. Fetch all expenses from DB for this user
+  const allExpenses = await prisma.expense.findMany({
+    where: { userId },
+    orderBy: { date: 'desc' }
+  });
 
   // 2. Semantic search — find most relevant expenses
   let relevantExpenses = allExpenses;
@@ -164,10 +167,10 @@ export async function processQuestion(userMessage) {
   // 3. Calculate structured stats from ALL expenses
   const stats = calculateStats(allExpenses);
 
-  // 4. Fetch budgets, subscriptions, and incomes
-  const budgets = await prisma.budget.findMany();
-  const subscriptions = await prisma.subscription.findMany({ where: { isActive: true } });
-  const incomes = await prisma.income.findMany({ orderBy: { date: 'desc' } });
+  // 4. Fetch budgets, subscriptions, and incomes for this user
+  const budgets = await prisma.budget.findMany({ where: { userId } });
+  const subscriptions = await prisma.subscription.findMany({ where: { userId, isActive: true } });
+  const incomes = await prisma.income.findMany({ where: { userId }, orderBy: { date: 'desc' } });
 
   // 5. Build context
   const structuredContext = buildStructuredContext(allExpenses, stats, budgets, subscriptions, incomes);
@@ -206,8 +209,11 @@ export async function processQuestion(userMessage) {
 /**
  * Semantic search endpoint
  */
-export async function searchExpenses(query) {
-  const allExpenses = await prisma.expense.findMany({ orderBy: { date: 'desc' } });
+export async function searchExpenses(query, userId) {
+  const allExpenses = await prisma.expense.findMany({
+    where: { userId },
+    orderBy: { date: 'desc' }
+  });
 
   if (allExpenses.some(e => e.embedding)) {
     return semanticSearch(query, allExpenses, 20);

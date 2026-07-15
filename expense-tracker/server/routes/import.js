@@ -3,9 +3,13 @@ import multer from 'multer';
 import prisma from '../lib/prisma.js';
 import { analyzeCSVStructure, classifyTransactionsBatch, parsePDFBankStatement } from '../services/llmService.js';
 import { embedExpense } from '../services/embeddingService.js';
+import { requireAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
+
+// Apply auth middleware to protect all import endpoints
+router.use(requireAuth);
 
 // Robust helper to parse CSV string handling double quotes and commas
 function parseCSV(text) {
@@ -97,7 +101,7 @@ router.post('/bank-statement', upload.single('statement'), async (req, res) => {
         rawAmount = parseFloat(row[mapping.debitIndex].replace(/[^\d.-]/g, '')) || 0;
         type = 'Regular';
       } else if (mapping.creditIndex !== -1 && row[mapping.creditIndex]) {
-        // If it is in the credit column, it is income (represented as negative expense or skipped, but let's label it income)
+        // If it is in the credit column, it is income (represented as negative expense or skipped, but let's allow it as Regular category)
         rawAmount = parseFloat(row[mapping.creditIndex].replace(/[^\d.-]/g, '')) || 0;
         type = 'Income';
       } else if (mapping.amountIndex !== -1 && row[mapping.amountIndex]) {
@@ -182,7 +186,8 @@ router.post('/confirm', async (req, res) => {
             amount: parseFloat(tx.amount),
             date: new Date(tx.date),
             isRecurring: false,
-            note: tx.note?.trim() || null
+            note: tx.note?.trim() || null,
+            userId: req.user.id
           }
         });
         confirmCount++;
@@ -196,7 +201,8 @@ router.post('/confirm', async (req, res) => {
             date: new Date(tx.date),
             merchant: tx.merchant?.trim() || null,
             note: tx.note?.trim() || null,
-            user: 'Me'
+            user: 'Me',
+            userId: req.user.id
           }
         });
 

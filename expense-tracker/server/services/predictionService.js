@@ -5,35 +5,43 @@ import prisma from '../lib/prisma.js';
  */
 export async function getSpendForecast() {
   try {
-    const expenses = await prisma.expense.findMany({
-      select: { id: true, name: true, amount: true, category: true, date: true }
-    });
-
-    if (expenses.length === 0) {
-      return {
-        currentMonthTotal: 0,
-        forecastedTotal: 0,
-        runRateDaily: 0,
-        categoryForecasts: [],
-        anomalies: []
-      };
-    }
+    const [expenses, incomes] = await Promise.all([
+      prisma.expense.findMany({
+        select: { id: true, name: true, amount: true, category: true, date: true }
+      }),
+      prisma.income.findMany({
+        select: { id: true, source: true, amount: true, date: true, isRecurring: true }
+      })
+    ]);
 
     const now = new Date();
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth(); // 0-indexed
     const currentDay = now.getDate();
     const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const elapsedDays = Math.max(1, currentDay);
 
-    // 1. Current Month Metrics
+    // 1. Current Month Expenses Metrics
     const currentMonthExpenses = expenses.filter(e => {
       const d = new Date(e.date);
       return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
     });
 
     const currentMonthTotal = currentMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
-    const elapsedDays = Math.max(1, currentDay);
     const forecastedTotal = (currentMonthTotal / elapsedDays) * daysInMonth;
+
+    // 2. Current Month Income Metrics
+    const currentMonthIncomes = incomes.filter(i => {
+      const d = new Date(i.date);
+      return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
+    });
+
+    const currentMonthIncome = currentMonthIncomes.reduce((sum, i) => sum + i.amount, 0);
+    const forecastedIncome = (currentMonthIncome / elapsedDays) * daysInMonth;
+
+    const currentMonthSavings = currentMonthIncome - currentMonthTotal;
+    const forecastedSavings = forecastedIncome - forecastedTotal;
+    const isDeficitRisk = forecastedSavings < 0;
 
     // Group current month by category
     const currentMonthCatMap = {};
@@ -72,7 +80,7 @@ export async function getSpendForecast() {
       }
     }
 
-    // 2. Anomaly Detection (Mean + 2 * StdDev)
+    // 3. Anomaly Detection (Mean + 2 * StdDev)
     const catExpensesList = {};
     expenses.forEach(e => {
       if (!catExpensesList[e.category]) catExpensesList[e.category] = [];
@@ -83,7 +91,7 @@ export async function getSpendForecast() {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    for (const [category, list] of Object.entries(catExpensesList)) {
+    for (const list of Object.values(catExpensesList)) {
       if (list.length < 5) continue; // Need enough history to compute standard deviation
 
       const amounts = list.map(e => e.amount);
@@ -120,6 +128,11 @@ export async function getSpendForecast() {
       currentMonthTotal,
       forecastedTotal: Math.round(forecastedTotal),
       runRateDaily: Math.round(currentMonthTotal / elapsedDays),
+      currentMonthIncome,
+      forecastedIncome: Math.round(forecastedIncome),
+      currentMonthSavings: Math.round(currentMonthSavings),
+      forecastedSavings: Math.round(forecastedSavings),
+      isDeficitRisk,
       categoryForecasts,
       anomalies: anomalies.sort((a, b) => b.amount - a.amount).slice(0, 5)
     };

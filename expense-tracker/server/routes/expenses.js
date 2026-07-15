@@ -4,15 +4,19 @@
 import { Router } from 'express';
 import prisma from '../lib/prisma.js';
 import { embedExpense } from '../services/embeddingService.js';
+import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
+
+// Apply auth middleware to protect all endpoints
+router.use(requireAuth);
 
 // ── GET /api/expenses — List all with optional filters ──
 router.get('/', async (req, res, next) => {
   try {
     const { category, type, search, startDate, endDate, sort = 'desc', limit } = req.query;
 
-    const where = {};
+    const where = { userId: req.user.id };
     if (category) where.category = category;
     if (type) where.type = type;
     if (search) {
@@ -56,6 +60,7 @@ router.get('/', async (req, res, next) => {
 router.get('/stats', async (req, res, next) => {
   try {
     const expenses = await prisma.expense.findMany({
+      where: { userId: req.user.id },
       select: { amount: true, category: true, type: true, date: true },
     });
 
@@ -111,6 +116,7 @@ router.post('/', async (req, res, next) => {
         merchant: merchant?.trim() || null,
         note: note?.trim() || null,
         user: user || 'Me',
+        userId: req.user.id,
       },
     });
 
@@ -138,6 +144,12 @@ router.put('/:id', async (req, res, next) => {
     const { id } = req.params;
     const { name, amount, category, type, date, merchant, note } = req.body;
 
+    // Verify ownership
+    const existing = await prisma.expense.findFirst({ where: { id, userId: req.user.id } });
+    if (!existing) {
+      return res.status(404).json({ error: 'Expense not found or unauthorized' });
+    }
+
     const data = {};
     if (name !== undefined) data.name = name.trim();
     if (amount !== undefined) data.amount = parseFloat(amount);
@@ -163,7 +175,6 @@ router.put('/:id', async (req, res, next) => {
 
     res.json(expense);
   } catch (err) {
-    if (err.code === 'P2025') return res.status(404).json({ error: 'Expense not found' });
     next(err);
   }
 });
@@ -171,10 +182,17 @@ router.put('/:id', async (req, res, next) => {
 // ── DELETE /api/expenses/:id ──
 router.delete('/:id', async (req, res, next) => {
   try {
-    await prisma.expense.delete({ where: { id: req.params.id } });
+    const { id } = req.params;
+    
+    // Verify ownership
+    const existing = await prisma.expense.findFirst({ where: { id, userId: req.user.id } });
+    if (!existing) {
+      return res.status(404).json({ error: 'Expense not found or unauthorized' });
+    }
+
+    await prisma.expense.delete({ where: { id } });
     res.json({ success: true });
   } catch (err) {
-    if (err.code === 'P2025') return res.status(404).json({ error: 'Expense not found' });
     next(err);
   }
 });

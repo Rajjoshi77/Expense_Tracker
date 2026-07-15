@@ -1,12 +1,17 @@
 import { Router } from 'express';
 import prisma from '../lib/prisma.js';
+import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
+
+// Apply auth middleware to protect all endpoints
+router.use(requireAuth);
 
 // ── GET /api/incomes — List all income entries ──
 router.get('/', async (req, res, next) => {
   try {
     const incomes = await prisma.income.findMany({
+      where: { userId: req.user.id },
       orderBy: { date: 'desc' }
     });
     res.json(incomes);
@@ -30,7 +35,8 @@ router.post('/', async (req, res, next) => {
         amount: parseFloat(amount),
         date: date ? new Date(date) : new Date(),
         isRecurring: !!isRecurring,
-        note: note?.trim() || null
+        note: note?.trim() || null,
+        userId: req.user.id
       }
     });
 
@@ -44,6 +50,13 @@ router.post('/', async (req, res, next) => {
 router.delete('/:id', async (req, res, next) => {
   try {
     const { id } = req.params;
+
+    // Verify ownership
+    const existing = await prisma.income.findFirst({ where: { id, userId: req.user.id } });
+    if (!existing) {
+      return res.status(404).json({ error: 'Income entry not found or unauthorized' });
+    }
+
     await prisma.income.delete({ where: { id } });
     res.json({ success: true });
   } catch (err) {

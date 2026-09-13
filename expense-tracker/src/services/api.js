@@ -13,7 +13,14 @@ const API = axios.create({
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
+    // Set Authorization header for all requests
     config.headers.Authorization = `Bearer ${token}`;
+    
+    // For multipart/form-data, don't override Content-Type
+    // Let axios/browser set it automatically with boundary
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
   }
   return config;
 }, (error) => {

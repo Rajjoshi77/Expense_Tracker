@@ -182,6 +182,7 @@ const Home = ({ expenses, incomes = [], onAddExpense, onDeleteExpense, onAddInco
               >
                 Frankfurter
               </a>
+              {' '} · Made by <a href="https://github.com/Rajjoshi77" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">@Raj Joshi</a>
             </p>
           </div>
         </motion.footer>
